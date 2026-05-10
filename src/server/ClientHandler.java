@@ -1,9 +1,10 @@
 package server;
 
-import java.io.BufferedReader;
+import model.Mensaje;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class ClientHandler implements Runnable {
@@ -19,24 +20,35 @@ public class ClientHandler implements Runnable {
 
         try {
 
-            BufferedReader entrada = new BufferedReader(
-                    new InputStreamReader(socketCliente.getInputStream()));
+            ObjectOutputStream salida =
+                    new ObjectOutputStream(socketCliente.getOutputStream());
 
-            PrintWriter salida = new PrintWriter(
-                    socketCliente.getOutputStream(), true);
+            ObjectInputStream entrada =
+                    new ObjectInputStream(socketCliente.getInputStream());
 
-            salida.println("Conectado al servidor de ProyectoSteam");
+            salida.writeObject(
+                    new Mensaje(
+                            "Servidor",
+                            "Conectado a ProyectoSteam"));
 
-            String mensaje;
+            while (true) {
 
-            while ((mensaje = entrada.readLine()) != null) {
+                Mensaje mensaje =
+                        (Mensaje) entrada.readObject();
 
-                System.out.println("Mensaje recibido: " + mensaje);
+                System.out.println(
+                        "Mensaje recibido -> "
+                                + mensaje);
 
-                salida.println("Servidor recibió: " + mensaje);
+                Mensaje respuesta =
+                        new Mensaje(
+                                "Servidor",
+                                "Recibido correctamente");
+
+                salida.writeObject(respuesta);
             }
 
-        } catch (IOException e) {
+        } catch (IOException | ClassNotFoundException e) {
 
             System.out.println("Cliente desconectado.");
 

@@ -1,9 +1,10 @@
 package client;
 
-import java.io.BufferedReader;
+import model.Mensaje;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Scanner;
 
@@ -18,32 +19,45 @@ public class ClientMain {
 
                 Socket socket = new Socket(HOST, PUERTO);
 
-                BufferedReader entrada = new BufferedReader(
-                        new InputStreamReader(socket.getInputStream()));
+                ObjectOutputStream salida =
+                        new ObjectOutputStream(socket.getOutputStream());
 
-                PrintWriter salida = new PrintWriter(
-                        socket.getOutputStream(), true);
+                ObjectInputStream entrada =
+                        new ObjectInputStream(socket.getInputStream());
 
-                Scanner scanner = new Scanner(System.in)) {
+                Scanner scanner = new Scanner(System.in)
+        ) {
 
-            System.out.println(entrada.readLine());
+            Mensaje bienvenida =
+                    (Mensaje) entrada.readObject();
+
+            System.out.println(bienvenida);
+
+            System.out.print("Ingresa tu nombre: ");
+            String usuario = scanner.nextLine();
 
             while (true) {
 
-                System.out.print("Escribe un mensaje: ");
+                System.out.print("Mensaje: ");
 
-                String mensaje = scanner.nextLine();
+                String texto = scanner.nextLine();
 
-                salida.println(mensaje);
+                Mensaje mensaje =
+                        new Mensaje(usuario, texto);
 
-                String respuesta = entrada.readLine();
+                salida.writeObject(mensaje);
+
+                Mensaje respuesta =
+                        (Mensaje) entrada.readObject();
 
                 System.out.println(respuesta);
             }
 
-        } catch (IOException e) {
+        } catch (IOException | ClassNotFoundException e) {
 
-            System.out.println("Error de conexión: " + e.getMessage());
+            System.out.println(
+                    "Error de conexión: "
+                            + e.getMessage());
         }
     }
 }
