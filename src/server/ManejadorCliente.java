@@ -7,6 +7,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import model.Juego;
+import java.util.ArrayList;
+import java.util.List;
+
 public class ManejadorCliente implements Runnable {
 
     private Socket socketCliente;
@@ -48,7 +52,21 @@ public class ManejadorCliente implements Runnable {
                         "Mensaje recibido -> "
                                 + mensaje);
 
-                enviarATodos(mensaje);
+                String contenido =
+                        mensaje.getContenido();
+
+                if (contenido.startsWith("/comprar ")) {
+
+                    comprarJuego(mensaje);
+
+                } else if (contenido.equals("/biblioteca")) {
+
+                    enviarBiblioteca();
+
+                } else {
+
+                    enviarATodos(mensaje);
+                }
             }
 
         } catch (IOException | ClassNotFoundException e) {
@@ -93,6 +111,89 @@ public class ManejadorCliente implements Runnable {
                     System.out.println(
                             "Error enviando mensaje.");
                 }
+            }
+        }
+    }
+    
+    private void comprarJuego(Mensaje mensaje) {
+
+        String nombreJuego =
+                mensaje.getContenido()
+                        .replace("/comprar ", "");
+
+        synchronized (ServerMain.bibliotecasUsuarios) {
+
+            ServerMain.bibliotecasUsuarios
+                    .putIfAbsent(
+                            nombreUsuario,
+                            new ArrayList<>());
+
+            List<Juego> biblioteca =
+                    ServerMain.bibliotecasUsuarios
+                            .get(nombreUsuario);
+
+            Juego juego =
+                    new Juego(nombreJuego);
+
+            biblioteca.add(juego);
+
+            try {
+
+                salida.writeObject(
+                        new Mensaje(
+                                "Servidor",
+                                "Juego agregado: "
+                                        + nombreJuego));
+
+            } catch (IOException e) {
+
+                System.out.println(
+                        "Error enviando confirmación.");
+            }
+        }
+    }
+    
+    private void enviarBiblioteca() {
+
+        synchronized (ServerMain.bibliotecasUsuarios) {
+
+            List<Juego> biblioteca =
+                    ServerMain.bibliotecasUsuarios
+                            .get(nombreUsuario);
+
+            try {
+
+                if (biblioteca == null
+                        || biblioteca.isEmpty()) {
+
+                    salida.writeObject(
+                            new Mensaje(
+                                    "Servidor",
+                                    "Biblioteca vacía"));
+
+                    return;
+                }
+
+                StringBuilder juegos =
+                        new StringBuilder();
+
+                for (Juego juego : biblioteca) {
+
+                    juegos.append("- ")
+                            .append(juego.getNombre())
+                            .append("\n");
+                }
+
+                salida.writeObject(
+                        new Mensaje(
+                                "Servidor",
+                                "\nBiblioteca:\n"
+                                        + juegos));
+
+            } catch (IOException e) {
+
+                System.out.println(
+                        "Error enviando biblioteca.");
             }
         }
     }

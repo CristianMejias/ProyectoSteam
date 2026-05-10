@@ -5,14 +5,19 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import model.Juego;
 
 public class ServerMain {
 
     private static final int PUERTO = 5000;
 
     // Lista compartida entre hilos
-    public static List<ManejadorCliente> clientesConectados =
-            new ArrayList<>();
+    public static List<ManejadorCliente> clientesConectados = new ArrayList<>();
+    public static Map<String, List<Juego>> bibliotecasUsuarios = new HashMap<>();
 
     public static void main(String[] args) {
 
