@@ -44,18 +44,51 @@ public class ManejadorCliente implements Runnable {
 
             while (true) {
 
-                Mensaje mensaje =
-                        (Mensaje) entrada.readObject();
+                Mensaje mensaje
+                        = (Mensaje) entrada.readObject();
 
-                nombreUsuario =
-                        mensaje.getUsuario();
+                if (nombreUsuario == null) {
+
+                    String posibleNombre =
+                            mensaje.getUsuario();
+
+                    synchronized (ServerMain.usuariosActivos) {
+
+                        if (ServerMain.usuariosActivos
+                                .contains(posibleNombre)) {
+
+                            salida.writeObject(
+                                    new Mensaje(
+                                            "Servidor",
+                                            "El nombre ya está en uso"));
+
+                            socketCliente.close();
+
+                            return;
+                        }
+
+                        ServerMain.usuariosActivos
+                                .add(posibleNombre);
+                    }
+
+                    nombreUsuario = posibleNombre;
+
+                    enviarATodos(
+                            new Mensaje(
+                                    "Servidor",
+                                    nombreUsuario
+                                            + " se ha conectado"));
+                }
 
                 System.out.println(
                         "Mensaje recibido -> "
-                                + mensaje);
+                        + mensaje);
 
-                String contenido =
-                        mensaje.getContenido();
+                String contenido
+                        = mensaje.getContenido();
+                if (contenido.trim().isEmpty()) {
+                    continue;
+                }
 
                 if (contenido.startsWith("/comprar ")) {
 
@@ -64,6 +97,18 @@ public class ManejadorCliente implements Runnable {
                 } else if (contenido.equals("/biblioteca")) {
 
                     enviarBiblioteca();
+
+                } else if (contenido.equals("/usuarios")) {
+
+                    enviarUsuarios();
+                
+                } else if (contenido.equals("/ayuda")) {
+                    
+                    enviarAyuda();
+
+                } else if (contenido.equals("/salir")) {
+
+                    break;
 
                 } else {
 
@@ -75,7 +120,7 @@ public class ManejadorCliente implements Runnable {
 
             System.out.println(
                     "Cliente desconectado: "
-                            + nombreUsuario);
+                    + nombreUsuario);
 
         } finally {
 
@@ -84,6 +129,21 @@ public class ManejadorCliente implements Runnable {
                 synchronized (ServerMain.clientesConectados) {
 
                     ServerMain.clientesConectados.remove(this);
+                }
+                
+                if (nombreUsuario != null) {
+
+                    enviarATodos(
+                            new Mensaje(
+                                    "Servidor",
+                                    nombreUsuario
+                                            + " se ha desconectado"));
+                }
+                
+                synchronized (ServerMain.usuariosActivos) {
+
+                    ServerMain.usuariosActivos
+                            .remove(nombreUsuario);
                 }
 
                 socketCliente.close();
@@ -116,11 +176,11 @@ public class ManejadorCliente implements Runnable {
             }
         }
     }
-    
+
     private void comprarJuego(Mensaje mensaje) {
 
-        String nombreJuego =
-                mensaje.getContenido()
+        String nombreJuego
+                = mensaje.getContenido()
                         .replace("/comprar ", "");
 
         synchronized (ServerMain.bibliotecasUsuarios) {
@@ -130,15 +190,37 @@ public class ManejadorCliente implements Runnable {
                             nombreUsuario,
                             new ArrayList<>());
 
-            List<Juego> biblioteca =
-                    ServerMain.bibliotecasUsuarios
+            List<Juego> biblioteca
+                    = ServerMain.bibliotecasUsuarios
                             .get(nombreUsuario);
+
+            for (Juego juegoExistente : biblioteca) {
+
+                if (juegoExistente.getNombre()
+                        .equalsIgnoreCase(nombreJuego)) {
+
+                    try {
+
+                        salida.writeObject(
+                                new Mensaje(
+                                        "Servidor",
+                                        "Ya tienes ese juego"));
+
+                    } catch (IOException e) {
+
+                        System.out.println(
+                                "Error enviando mensaje.");
+                    }
+
+                    return;
+                }
+            }
 
             Juego juego =
                     new Juego(nombreJuego);
 
             biblioteca.add(juego);
-            
+
             Persistencia.guardarBibliotecas(ServerMain.bibliotecasUsuarios);
 
             try {
@@ -147,7 +229,7 @@ public class ManejadorCliente implements Runnable {
                         new Mensaje(
                                 "Servidor",
                                 "Juego agregado: "
-                                        + nombreJuego));
+                                + nombreJuego));
 
             } catch (IOException e) {
 
@@ -156,13 +238,13 @@ public class ManejadorCliente implements Runnable {
             }
         }
     }
-    
+
     private void enviarBiblioteca() {
 
         synchronized (ServerMain.bibliotecasUsuarios) {
 
-            List<Juego> biblioteca =
-                    ServerMain.bibliotecasUsuarios
+            List<Juego> biblioteca
+                    = ServerMain.bibliotecasUsuarios
                             .get(nombreUsuario);
 
             try {
@@ -178,8 +260,8 @@ public class ManejadorCliente implements Runnable {
                     return;
                 }
 
-                StringBuilder juegos =
-                        new StringBuilder();
+                StringBuilder juegos
+                        = new StringBuilder();
 
                 for (Juego juego : biblioteca) {
 
@@ -192,7 +274,7 @@ public class ManejadorCliente implements Runnable {
                         new Mensaje(
                                 "Servidor",
                                 "\nBiblioteca:\n"
-                                        + juegos));
+                                + juegos));
 
             } catch (IOException e) {
 
@@ -201,4 +283,71 @@ public class ManejadorCliente implements Runnable {
             }
         }
     }
+    
+    
+    private void enviarUsuarios() {
+
+        StringBuilder usuarios =
+                new StringBuilder();
+
+        synchronized (ServerMain.clientesConectados) {
+
+            for (ManejadorCliente cliente
+                    : ServerMain.clientesConectados) {
+
+                if (cliente.nombreUsuario != null) {
+
+                    usuarios.append("- ")
+                            .append(cliente.nombreUsuario)
+                            .append("\n");
+                }
+            }
+        }
+
+        try {
+
+            salida.writeObject(
+                    new Mensaje(
+                            "Servidor",
+                            "\nUsuarios conectados:\n"
+                                    + usuarios));
+
+        } catch (IOException e) {
+
+            System.out.println(
+                    "Error enviando usuarios.");
+        }
+    }
+    
+    private void enviarAyuda() {
+
+            String ayuda = """
+                           
+                    ===== COMANDOS DISPONIBLES =====
+                    /ayuda
+                        Muestra esta lista de comandos
+                    /usuarios
+                        Muestra usuarios conectados
+                    /comprar NOMBRE
+                        Compra un juego
+                    /biblioteca
+                        Muestra tu biblioteca
+                    /salir
+                        Cierra la conexión
+                    ================================
+                    """;
+
+            try {
+
+                salida.writeObject(
+                        new Mensaje(
+                                "Servidor",
+                                ayuda));
+
+            } catch (IOException e) {
+
+                System.out.println(
+                        "Error enviando ayuda.");
+            }
+        }
 }

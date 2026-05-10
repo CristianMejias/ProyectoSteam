@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 import model.Juego;
 import persistencia.Persistencia;
@@ -19,6 +21,7 @@ public class ServerMain {
     // Lista compartida entre hilos
     public static List<ManejadorCliente> clientesConectados = new ArrayList<>();
     public static Map<String, List<Juego>> bibliotecasUsuarios = new HashMap<>();
+    public static Set<String> usuariosActivos = new HashSet<>();
 
     public static void main(String[] args) {
 

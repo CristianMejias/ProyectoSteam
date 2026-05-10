@@ -52,6 +52,17 @@ public class ClienteMain {
                                         (Mensaje) entrada.readObject();
 
                                 System.out.println(mensaje);
+                                
+                                if (mensaje.getContenido()
+                                        .equals("El nombre ya está en uso")) {
+
+                                    System.out.println(
+                                            "Cerrando cliente...");
+
+                                    socket.close();
+
+                                    System.exit(0);
+                                }
                             }
 
                         } catch (IOException | ClassNotFoundException e) {
@@ -73,7 +84,21 @@ public class ClienteMain {
                         new Mensaje(usuario, texto);
 
                 salida.writeObject(mensaje);
+
+                // Salir correctamente
+                if (texto.equals("/salir")) {
+
+                    System.out.println(
+                            "Desconectando del servidor...");
+
+                    socket.close();
+
+                    break;
+                }
             }
+            
+            // Finalizar programa
+            System.exit(0);
 
         } catch (IOException | ClassNotFoundException e) {
 
