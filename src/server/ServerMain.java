@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import model.Juego;
+import persistencia.Persistencia;
 
 public class ServerMain {
 
@@ -22,6 +23,9 @@ public class ServerMain {
     public static void main(String[] args) {
 
         System.out.println("=== SERVIDOR STEAM INICIADO ===");
+        
+        bibliotecasUsuarios = Persistencia.cargarBibliotecas();
+        System.out.println("Bibliotecas cargadas: " + bibliotecasUsuarios.size());
 
         try (ServerSocket servidor =
                      new ServerSocket(PUERTO)) {

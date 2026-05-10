@@ -11,6 +11,8 @@ import model.Juego;
 import java.util.ArrayList;
 import java.util.List;
 
+import persistencia.Persistencia;
+
 public class ManejadorCliente implements Runnable {
 
     private Socket socketCliente;
@@ -136,6 +138,8 @@ public class ManejadorCliente implements Runnable {
                     new Juego(nombreJuego);
 
             biblioteca.add(juego);
+            
+            Persistencia.guardarBibliotecas(ServerMain.bibliotecasUsuarios);
 
             try {
 
