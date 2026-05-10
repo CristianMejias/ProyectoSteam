@@ -13,10 +13,11 @@ import java.util.Set;
 
 import model.Juego;
 import persistencia.Persistencia;
+import utils.Constantes;
 
 public class ServerMain {
 
-    private static final int PUERTO = 5000;
+    private static final int PUERTO = Constantes.PUERTO;
 
     // Lista compartida entre hilos
     public static List<ManejadorCliente> clientesConectados = new ArrayList<>();
@@ -25,7 +26,12 @@ public class ServerMain {
 
     public static void main(String[] args) {
 
-        System.out.println("=== SERVIDOR STEAM INICIADO ===");
+        System.out.println("""
+        
+        ====================================
+              SERVIDOR PROYECTOSTEAM
+        ====================================
+        """);
         
         bibliotecasUsuarios = Persistencia.cargarBibliotecas();
         System.out.println("Bibliotecas cargadas: " + bibliotecasUsuarios.size());

@@ -1,6 +1,8 @@
 package model;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Mensaje implements Serializable {
 
@@ -8,10 +10,18 @@ public class Mensaje implements Serializable {
 
     private String usuario;
     private String contenido;
+    private String hora;
 
     public Mensaje(String usuario, String contenido) {
         this.usuario = usuario;
         this.contenido = contenido;
+
+        DateTimeFormatter formato =
+                DateTimeFormatter.ofPattern("HH:mm:ss");
+
+        this.hora =
+                LocalDateTime.now()
+                        .format(formato);
     }
 
     public String getUsuario() {
@@ -24,6 +34,10 @@ public class Mensaje implements Serializable {
 
     @Override
     public String toString() {
-        return usuario + ": " + contenido;
+
+        return "[" + hora + "] "
+                + usuario
+                + ": "
+                + contenido;
     }
 }

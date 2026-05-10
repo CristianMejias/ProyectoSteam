@@ -8,10 +8,12 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Scanner;
 
+import utils.Constantes;
+
 public class ClienteMain {
 
-    private static final String HOST = "localhost";
-    private static final int PUERTO = 5000;
+    private static final String HOST = Constantes.HOST;
+    private static final int PUERTO = Constantes.PUERTO;
 
     public static void main(String[] args) {
 
@@ -35,6 +37,15 @@ public class ClienteMain {
                     (Mensaje) entrada.readObject();
 
             System.out.println(bienvenida);
+            
+            System.out.println("""
+            ====================================
+                    PROYECTO STEAM
+             Sistema Distribuido en Java TCP
+            ====================================
+            Escribe /ayuda para ver comandos
+
+            """);
 
             System.out.print("Ingresa tu nombre: ");
             String usuario =
