@@ -1,14 +1,13 @@
-package client;
+package cliente;
 
 import model.Mensaje;
+import utils.Constantes;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Scanner;
-
-import utils.Constantes;
 
 public class ClienteMain {
 
@@ -18,104 +17,71 @@ public class ClienteMain {
     public static void main(String[] args) {
 
         try {
+            Socket socket = new Socket(HOST, PUERTO);
+            ObjectOutputStream salida = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream entrada = new ObjectInputStream(socket.getInputStream());
+            Scanner scanner = new Scanner(System.in);
 
-            Socket socket =
-                    new Socket(HOST, PUERTO);
-
-            ObjectOutputStream salida =
-                    new ObjectOutputStream(
-                            socket.getOutputStream());
-
-            ObjectInputStream entrada =
-                    new ObjectInputStream(
-                            socket.getInputStream());
-
-            Scanner scanner =
-                    new Scanner(System.in);
-
-            Mensaje bienvenida =
-                    (Mensaje) entrada.readObject();
-
-            System.out.println(bienvenida);
-            
             System.out.println("""
-            ====================================
-                    PROYECTO STEAM
-             Sistema Distribuido en Java TCP
-            ====================================
-            Escribe /ayuda para ver comandos
-
-            """);
+                    
+                    ====================================
+                            PROYECTO STEAM
+                     Sistema Distribuido en Java TCP
+                    ====================================
+                    Ingresa tu nombre para conectarte.
+                    Luego escribe /ayuda para ver comandos.
+                    """);
 
             System.out.print("Ingresa tu nombre: ");
-            String usuario =
-                    scanner.nextLine();
+            String usuario = scanner.nextLine().trim();
 
-            // Hilo que escucha mensajes
-            Thread hiloLectura =
-                    new Thread(() -> {
+            if (usuario.isEmpty()) {
+                System.out.println("El nombre no puede estar vacío.");
+                socket.close();
+                return;
+            }
 
-                        try {
+            Thread hiloLectura = new Thread(() -> {
+                try {
+                    while (true) {
+                        Mensaje mensaje = (Mensaje) entrada.readObject();
+                        System.out.println(mensaje);
 
-                            while (true) {
-
-                                Mensaje mensaje =
-                                        (Mensaje) entrada.readObject();
-
-                                System.out.println(mensaje);
-                                
-                                if (mensaje.getContenido()
-                                        .equals("El nombre ya está en uso")) {
-
-                                    System.out.println(
-                                            "Cerrando cliente...");
-
-                                    socket.close();
-
-                                    System.exit(0);
-                                }
-                            }
-
-                        } catch (IOException | ClassNotFoundException e) {
-
-                            System.out.println(
-                                    "Desconectado del servidor.");
+                        if (mensaje.getContenido().equals("El nombre ya está en uso")) {
+                            System.out.println("Cerrando cliente...");
+                            socket.close();
+                            System.exit(0);
                         }
-                    });
+                    }
+                } catch (IOException | ClassNotFoundException e) {
+                    System.out.println("Desconectado del servidor.");
+                }
+            });
 
             hiloLectura.start();
 
-            // Enviar mensajes
+            salida.writeObject(new Mensaje(usuario, "/entrar"));
+
             while (true) {
+                String texto = scanner.nextLine().trim();
 
-                String texto =
-                        scanner.nextLine();
+                if (texto.isEmpty()) {
+                    continue;
+                }
 
-                Mensaje mensaje =
-                        new Mensaje(usuario, texto);
+                salida.writeObject(new Mensaje(usuario, texto));
 
-                salida.writeObject(mensaje);
-
-                // Salir correctamente
                 if (texto.equals("/salir")) {
-
-                    System.out.println(
-                            "Desconectando del servidor...");
-
+                    System.out.println("Desconectando del servidor...");
                     socket.close();
-
                     break;
                 }
             }
-            
-            // Finalizar programa
+
             System.exit(0);
 
-        } catch (IOException | ClassNotFoundException e) {
-
-            System.out.println(
-                    "Error de conexión: "
-                            + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("Error de conexión: " + e.getMessage());
         }
     }
 }
