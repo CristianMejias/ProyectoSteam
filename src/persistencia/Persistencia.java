@@ -1,70 +1,64 @@
 package persistencia;
 
-import model.Juego;
+import model.Usuario;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import model.Juego;
+
 
 public class Persistencia {
 
-    private static final String ARCHIVO =
-            "bibliotecas.dat";
+    private static final String ARCHIVO_USUARIOS = "usuarios.dat";
+    private static final String ARCHIVO_CATALOGO = "catalogo.dat";
 
-    // Guardar datos
-    public static void guardarBibliotecas(
-            Map<String, List<Juego>> bibliotecas) {
-
-        try (
-
-                ObjectOutputStream salida =
-                        new ObjectOutputStream(
-                                new FileOutputStream(ARCHIVO))
-        ) {
-
-            salida.writeObject(bibliotecas);
-
-            System.out.println(
-                    "Bibliotecas guardadas.");
-
+    public static synchronized void guardarUsuarios(Map<String, Usuario> usuarios) {
+        try (ObjectOutputStream salida = new ObjectOutputStream(new FileOutputStream(ARCHIVO_USUARIOS))) {
+            salida.writeObject(new ConcurrentHashMap<>(usuarios));
         } catch (IOException e) {
-
-            System.out.println(
-                    "Error guardando datos.");
+            System.out.println("Error guardando usuarios.");
         }
     }
 
-    // Cargar datos
     @SuppressWarnings("unchecked")
-    public static Map<String, List<Juego>>
-    cargarBibliotecas() {
+    public static synchronized Map<String, Usuario> cargarUsuarios() {
+        File archivo = new File(ARCHIVO_USUARIOS);
 
-        File archivo =
-                new File(ARCHIVO);
-
-        // Si no existe archivo
         if (!archivo.exists()) {
-
-            return new HashMap<>();
+            return new ConcurrentHashMap<>();
         }
 
-        try (
-
-                ObjectInputStream entrada =
-                        new ObjectInputStream(
-                                new FileInputStream(ARCHIVO))
-        ) {
-
-            return (Map<String, List<Juego>>)
-                    entrada.readObject();
-
+        try (ObjectInputStream entrada = new ObjectInputStream(new FileInputStream(ARCHIVO_USUARIOS))) {
+            return (Map<String, Usuario>) entrada.readObject();
         } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error cargando usuarios.");
+            return new ConcurrentHashMap<>();
+        }
+    }
+    
+    public static void guardarCatalogo(Map<String, Juego> catalogo) {
+        try (ObjectOutputStream salida = new ObjectOutputStream(new FileOutputStream(ARCHIVO_CATALOGO))) {
+            salida.writeObject(catalogo);
+            System.out.println("Catálogo guardado.");
+        } catch (IOException e) {
+            System.out.println("Error guardando catálogo.");
+        }
+    }
 
-            System.out.println(
-                    "Error cargando datos.");
+    @SuppressWarnings("unchecked")
+    public static Map<String, Juego> cargarCatalogo() {
+        File archivo = new File(ARCHIVO_CATALOGO);
 
-            return new HashMap<>();
+        if (!archivo.exists()) {
+            return new ConcurrentHashMap<>();
+        }
+
+        try (ObjectInputStream entrada = new ObjectInputStream(new FileInputStream(ARCHIVO_CATALOGO))) {
+            return (Map<String, Juego>) entrada.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error cargando catálogo.");
+            return new ConcurrentHashMap<>();
         }
     }
 }

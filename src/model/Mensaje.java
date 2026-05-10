@@ -15,13 +15,8 @@ public class Mensaje implements Serializable {
     public Mensaje(String usuario, String contenido) {
         this.usuario = usuario;
         this.contenido = contenido;
-
-        DateTimeFormatter formato =
-                DateTimeFormatter.ofPattern("HH:mm:ss");
-
-        this.hora =
-                LocalDateTime.now()
-                        .format(formato);
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("HH:mm:ss");
+        this.hora = LocalDateTime.now().format(formato);
     }
 
     public String getUsuario() {
@@ -34,10 +29,6 @@ public class Mensaje implements Serializable {
 
     @Override
     public String toString() {
-
-        return "[" + hora + "] "
-                + usuario
-                + ": "
-                + contenido;
+        return "[" + hora + "] " + usuario + ": " + contenido;
     }
 }

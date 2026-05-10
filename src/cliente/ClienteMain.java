@@ -15,7 +15,6 @@ public class ClienteMain {
     private static final int PUERTO = Constantes.PUERTO;
 
     public static void main(String[] args) {
-
         try {
             Socket socket = new Socket(HOST, PUERTO);
             ObjectOutputStream salida = new ObjectOutputStream(socket.getOutputStream());
@@ -23,13 +22,12 @@ public class ClienteMain {
             Scanner scanner = new Scanner(System.in);
 
             System.out.println("""
-                    
+
                     ====================================
-                            PROYECTO STEAM
+                            Cliente STEAM
                      Sistema Distribuido en Java TCP
                     ====================================
-                    Ingresa tu nombre para conectarte.
-                    Luego escribe /ayuda para ver comandos.
+                    Roles disponibles: usuario, publisher, admin
                     """);
 
             System.out.print("Ingresa tu nombre: ");
@@ -41,14 +39,16 @@ public class ClienteMain {
                 return;
             }
 
+            System.out.print("Ingresa tu rol: ");
+            String rol = scanner.nextLine().trim();
+
             Thread hiloLectura = new Thread(() -> {
                 try {
-                    while (true) {
+                    while (!socket.isClosed()) {
                         Mensaje mensaje = (Mensaje) entrada.readObject();
                         System.out.println(mensaje);
 
                         if (mensaje.getContenido().equals("El nombre ya está en uso")) {
-                            System.out.println("Cerrando cliente...");
                             socket.close();
                             System.exit(0);
                         }
@@ -59,10 +59,10 @@ public class ClienteMain {
             });
 
             hiloLectura.start();
+            salida.writeObject(new Mensaje(usuario, "/entrar " + rol));
+            salida.flush();
 
-            salida.writeObject(new Mensaje(usuario, "/entrar"));
-
-            while (true) {
+            while (!socket.isClosed()) {
                 String texto = scanner.nextLine().trim();
 
                 if (texto.isEmpty()) {
@@ -70,6 +70,7 @@ public class ClienteMain {
                 }
 
                 salida.writeObject(new Mensaje(usuario, texto));
+                salida.flush();
 
                 if (texto.equals("/salir")) {
                     System.out.println("Desconectando del servidor...");
@@ -79,7 +80,6 @@ public class ClienteMain {
             }
 
             System.exit(0);
-
         } catch (IOException e) {
             System.out.println("Error de conexión: " + e.getMessage());
         }
