@@ -1,0 +1,37 @@
+{
+  "catalogo": {
+    "minecraft": {
+      "id": "minecraft",
+      "nombre": "Minecraft",
+      "vendedor": "Mojang",
+      "precio": 12000.0,
+      "stock": 10
+    },
+    "terraria": {
+      "id": "terraria",
+      "nombre": "Terraria",
+      "vendedor": "Re-Logic",
+      "precio": 8000.0,
+      "stock": 8
+    },
+    "gtav": {
+      "id": "gtav",
+      "nombre": "GTA V",
+      "vendedor": "Rockstar Games",
+      "precio": 9500.0,
+      "stock": 5
+    },
+    "portal": {
+      "id": "portal",
+      "nombre": "Portal",
+      "vendedor": "Valve",
+      "precio": 7000.0,
+      "stock": 6
+    }
+  },
+  "billeteras": {
+    "comprador": 30000.0
+  },
+  "bibliotecas": {},
+  "reservas": {}
+}
