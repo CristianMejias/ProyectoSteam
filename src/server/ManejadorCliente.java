@@ -231,7 +231,7 @@ public class ManejadorCliente implements Runnable {
         ServerMain.reservasPendientes.put(clave, reserva);
 
         ServerMain.planificador.schedule(() -> expirarReserva(clave), Constantes.TIEMPO_RESERVA_MS, TimeUnit.MILLISECONDS);
-        enviarMensajeServidor("Copia bloqueada temporalmente. Confirma con /confirmar " + juego.getNombre() + " antes de " + Constantes.MSJ_TIEMPO_RESERVA_S);
+        enviarMensajeServidor("Copia bloqueada temporalmente. Confirma con /confirmar " + juego.getNombre() + " antes de " + Constantes.MSJ_TIEMPO_RESERVA);
     }
 
     private void confirmarCompra(String nombreJuego) {
@@ -324,7 +324,7 @@ public class ManejadorCliente implements Runnable {
             Persistencia.guardarUsuarios(ServerMain.usuariosRegistrados);
             enviarMensajeServidor("Saldo cargado. Saldo actual: $" + usuario.getSaldo());
         } catch (NumberFormatException e) {
-            enviarMensajeServidor("Uso correcto: /cargar monto");
+            enviarMensajeServidor("Uso correcto: /cargar [monto]");
         }
     }
 
@@ -337,7 +337,7 @@ public class ManejadorCliente implements Runnable {
         String[] partes = contenido.split("\\s+");
 
         if (partes.length < 4) {
-            enviarMensajeServidor("Uso: /publicar nombre precio stock [reserva]");
+            enviarMensajeServidor("Uso: /publicar [nombre] [precio] [stock] [reserva]");
             return;
         }
 
@@ -370,7 +370,7 @@ public class ManejadorCliente implements Runnable {
         String[] partes = contenido.split("\\s+");
 
         if (partes.length < 3) {
-            enviarMensajeServidor("Uso: /agregarstock juego cantidad");
+            enviarMensajeServidor("Uso: /agregarstock [juego] [cantidad]");
             return;
         }
 
@@ -400,7 +400,7 @@ public class ManejadorCliente implements Runnable {
         String[] partes = contenido.split("\\s+", 3);
 
         if (partes.length < 3) {
-            enviarMensajeServidor("Uso: /msg usuario mensaje");
+            enviarMensajeServidor("Uso: /msg [usuario] [mensaje]");
             return;
         }
 
@@ -540,13 +540,13 @@ public class ManejadorCliente implements Runnable {
                     ===== COMANDOS USUARIO =====
                     /catalogo
                     /saldo
-                    /cargar monto
-                    /comprar juego
-                    /confirmar juego
-                    /reservar juego
-                    /comprobar juego
+                    /cargar [monto]
+                    /comprar [juego]
+                    /confirmar [juego]
+                    /reservar [juego]
+                    /comprobar [juego]
                     /misjuegos
-                    /msg usuario mensaje
+                    /msg [usuario] [mensaje]
                     /ayuda
                     /salir
                     ===========================
@@ -556,9 +556,9 @@ public class ManejadorCliente implements Runnable {
 
                     ===== COMANDOS PUBLISHER =====
                     /catalogo
-                    /publicar nombre precio stock [reserva]
-                    /agregarstock juego cantidad
-                    /msg usuario mensaje
+                    /publicar [nombre] [precio] [stock] [reserva (opcional)]
+                    /agregarstock [juego] [cantidad]
+                    /msg [usuario] [mensaje]
                     /ayuda
                     /salir
                     =============================
@@ -572,8 +572,8 @@ public class ManejadorCliente implements Runnable {
                     /juegos
                     /publishers
                     /reservas
-                    /biblioteca usuario
-                    /msg usuario mensaje
+                    /biblioteca [usuario]
+                    /msg [usuario] [mensaje]
                     /ayuda
                     /salir
                     =========================
